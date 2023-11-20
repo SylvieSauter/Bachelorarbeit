@@ -1,0 +1,324 @@
+#installation der notwendigen packages
+install.packages("devtools")
+library(devtools)
+install_github("AECP-ETHZ/ETH.OLP")
+library(ETH.OLP)
+install.packages("lpSolve")
+library(lpSolve)
+library(ETH.OLP)
+library(ggplot2)
+library(sensitivity)
+
+#Optimierung Betrieb 3 Jetztzustand----
+#Zielfunktion
+#Variablendeklaration
+#Winterweizen = Weiz, Winterraps = Raps, Naturwiese extensiv = NWex, Naturwiese mittel-intensiv = NWmi, Kunstwiese = KW, Hecken = Heck,
+#Wintergerste = Gerst, Körnermais = Kmais, Sonnenblumen = Sblum
+#Zuckerrüben = Zrüb, Nützlingsstreifen = Nützstr, Saum auf Ackerfläche = Saum, Buntbrache =Bbrach
+#maximize Z= 3272Weiz+4671Raps+3488Sblum+4530Zrüb+1731NWex+495NWmi+1808Heck+822KW+2325Nützstr+2921Saum+3268Bbrach
+
+#Flächenrestriktion
+#Weiz+Raps+Sblum+Zrüb+NWex+NWmi+Heck+KW+Nützstr+Saum+Bbrach <= 19.516ha
+
+#Arbeitsrestriktion
+#38Weiz+ 39Raps+37Sblum+48Zrüb+30NWex+49Nwmi+55Heck+49KW+35Nützstr+48Saum+49Bbrach <= 7800h
+
+#BFF-Restriktion
+# NWex+ Nutzstr + Heck + Saum + Bbrach >= 1.5659 ha
+
+#Maximale Kulturenanteile
+#Weiz<=5.4222
+#Raps<=2.7111
+#Sblum<=2.7111
+#Rüb<=2.7111
+#Bbrach<=2.7111
+
+#Saum<=0.4
+#Nützstr<=0.2
+
+
+#Optimierung Betrieb 3 Jetztzustand mit Code----
+
+#Eingabe Parameter
+
+#Zielfunktionskoeffizienten
+c <- c(3272,4671,3488,4530,1731,495,1808,822,2325,2921,3268)
+
+#Technische Koeffizienten
+A <- matrix (c(1,1,1,1,1,1,1,1,1,1,1, #Flächenrestriktion
+               38,39,37,48,30,49,55,49,35,48,49, #Arbeitsrestriktion
+               0,0,0,0,1,1,1,0,1,1,1, #BFFrestriktion
+               1,0,0,0,0,0,0,0,0,0,0,  #Maximale Kulturenanteile Weizen
+               0,1,0,0,0,0,0,0,0,0,0,  #Raps
+               0,0,1,0,0,0,0,0,0,0,0, #Sblum
+               0,0,0,1,0,0,0,0,0,0,0,  #Rüben
+               0,0,0,0,0,0,0,0,0,0,1, #Bbrach
+               0,0,0,0,0,0,0,0,0,1,0, #Saum
+               0,0,0,0,0,0,0,0,1,0,0 #Nützstr
+), nrow=10, byrow=TRUE)
+
+colnames(A) <- c("Winterweizen","Winterraps","Sonnenblumen","Zuckerrüben","Naturwiese extensiv","Naturwiese mittel-intensiv","Hecke","Kunstwiese","Nützlingsstreifen","Saum","Buntbrache")
+rownames(A) <- c("Fläche","Arbeit","BFF","Begrenzung Weizen","Begrenzung Raps","Begrenzung Sonnenblume","Begrenzung Zuckerrüben","Begrenzung Buntbrache","Begrenzung Saum","Begrenzung Nützlingsstreifen")
+
+#Richtung der RHS
+directions <- c("<=", "<=", ">=", "<=", "<=", "<=", "<=","<=","<=","<=")
+maximize = TRUE
+
+#RHS
+b <- c(19.52,7800,1.57,5.42,2.71,2.71,2.71,2.71,0.4,0.2)
+
+#Berechnung der Lösung
+
+LP<-LP(c =c, A = A, b = b, maximize = maximize, directions = directions)
+print(LP)
+luderohneackeroptimum <- LP$objective_value
+kulturenluderohnebff<-LP$solution
+
+#Sensitivitätsanalyse
+
+simdata <-simulate.LP(LP,n=1000,range=0.5)
+plot.simdata(simdata)
+
+#Regression
+xvariablen<-simdata$Input
+yvariable<-simdata$Output[,1]
+src<-src(X=xvariablen,y=yvariable,rank=FALSE, nboot=1000)
+
+
+srcc_all<-src$SRC
+
+srcc_all$order <-c(1,2,3,4,5,6,7,8,9,10,11)
+
+output_names_result  <- c("Estimate","bias","stderror","min","max","Parameter")
+
+colnames(srcc_all) <- output_names_result
+
+print(srcc_all)
+
+#Plot generieren
+
+grouping <- c("1","1","1","1","1","1","1","1","1","1","1")
+
+Fig_SCR_N <- ggplot(srcc_all, aes(x = Parameter, y=Estimate, color=grouping, shape = grouping)) +
+  
+  geom_hline(yintercept = 0, color = "dark grey", size = 1) +
+  
+  geom_point(aes(shape = grouping)) +
+  
+  xlim("Winterweizen","Winterraps","Sonnenblumen","Zuckerrüben","Naturwiese extensiv","Naturwiese mittel-intensiv","Hecke","Kunstwiese","Nützlingsstreifen","Saum","Buntbrache") +
+  
+  coord_cartesian(ylim = c(-0.25,0.75)) +
+  
+  scale_y_continuous(breaks=c(-0.25,0,0.25,0.5,0.75)) +
+  
+  geom_pointrange(aes(ymin= min, ymax=max),size = 0.5) +
+  
+  scale_shape_manual(values=c(19, 19, 17)) +
+  
+  scale_color_manual(values=c("#009E73","#E69F00","#0072B2" )) +
+  
+  theme_light() +
+  
+  theme(legend.position = "none" ) +
+  
+  theme(plot.title = element_text(size=16)) +
+  
+  theme(plot.title = element_text(face = "bold"))+
+  
+  theme(axis.text=element_text(size=10), axis.title=element_text(size=15)) +
+  
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  
+  theme(panel.grid.minor = element_blank(), panel.grid.major.x = element_blank())
+
+
+Fig_SCR_N  
+
+#Sensitivität nach Viviane Fahrni
+
+library(lhs)
+library(sensitivity)
+library(ETH.OLP)
+
+
+
+library("MatchIt")
+library(plyr)
+library(dplyr)
+library(ggplot2)
+library(readxl)
+
+library(psych)
+library(ggpubr)
+library(GPArotation)
+library(tidyverse)
+library(writexl)
+library(compiler)
+library(memoise)
+
+library(MASS)
+library(lpSolve)
+library(landscapeR)
+library(raster)
+library(landscapemetrics)
+library(lctools)
+library(plot3D)
+library(matrixStats)
+library(grDevices )
+library(ggthemes)
+library(extrafont)
+library(scales)
+library(RCurl)
+library(purrr)
+
+library(rasterVis)
+library(terra)
+library(tidyterra)
+library(tgp)
+
+
+#Schattenpreise berechnen
+schattenpreise <- duals(LP)
+print(schattenpreise)
+
+#1. Define a function that runs the simulation model 
+#for a given parameter combination and return the 
+#value(s) of the fitting criteria.
+
+
+sim1 <- function(LHS_matrix) {
+  
+  # an empty list to save the simulation results
+  eval.values <- rep(0,nrow(LHS_matrix))
+  
+  # iterate through all rows/ combinations of random coefficients
+  for (i in 1:nrow(LHS_matrix)){
+    
+    # variables to be tested 
+    c2<-c(1:length(c))
+    for(j in 1:length(c)){
+      c2[j] <- LHS_matrix[i,j]
+    }
+    
+    A2 <- LHS_matrix[i,(1+length(c)):ncol(LHS_matrix)]
+    dim(A2) <- c(nrow(A),ncol(A))
+    
+    
+    print(c2)
+    print(A2)
+    
+    
+    # run LP / read in current parameter combination
+    
+    LP <- LP(c2, A2, b)
+    
+    # function
+    sim_optimal_value <- objective(LP)
+    
+    eval.values[i] <- sim_optimal_value
+    
+    
+  }
+  
+  LHS_matrix <- cbind(LHS_matrix,eval.values)
+  return(LHS_matrix)
+}
+
+
+
+# now this is the core of the method. LHS is done for n=1000 runs.
+# the range lower limits come first (all!), then upper limits.
+# for the c values i chose +/- 200 as an example
+# this has the advantage that ranges can be specified. but the disadvantage that
+# in this example this gives a monster matrix (sorry)
+# afterwards the number of parameters has to be explicitly given again
+neuematrix <- matrix(nrow=length(A)+length(c), ncol=2)
+for(m in 1:length(c)){
+  neuematrix[m,1] <- c[m] - 0.05*c[m]
+  neuematrix[m,2] <- c[m] + 0.05*c[m]
+  
+}
+l<-1+length(c)
+
+for(n in 1:nrow(A)){
+  for(m in 1:ncol(A)){
+    
+    
+    neuematrix[l,1] <- (A[n,m] - 0.1*A[n,m])
+    neuematrix[l,2] <- (A[n,m] + 0.1*A[n,m])
+    if(neuematrix[l,1] == 0){
+      neuematrix[l,1] <- -0.1
+    }
+    if(neuematrix[l,2]==0){
+      neuematrix[l,2] <- 0.1
+    }
+    l <- l+1
+    
+  }
+}
+
+param.sets1 <- lhs(n=1000, rect= neuematrix)
+
+#colnames erstellen
+indexe <- rep(0,ncol(param.sets1))
+
+for(p in (length(c)+1):ncol(param.sets1)){
+  for(r in 1:nrow(A)){
+    for(q in 1:ncol(A)){
+      indexe[p] <- as.character(paste("A",r,".",q , sep=""))
+      p <- p+1
+      
+    }
+  }
+}
+indexe <- indexe[-c((length(c)+2):(ncol(param.sets1)))]
+indexe[1:length(c)] <- colnames(A)
+indexe <- make.names(indexe,unique=TRUE)
+print(indexe)
+colnames(param.sets1) <- indexe
+
+
+# 3. Iterate through the parameter combinations from step 2 
+# and call function sim1 from step 1 for each parameter
+# combination. 
+sim.results1 <- sim1(param.sets1) #apply did not do it for me, that somehow only worked with one variable
+
+sim_results_data_frame1 <- as.data.frame(sim.results1)
+
+indexe[length(indexe) +1] <- "OptimalValue"
+
+colnames(sim_results_data_frame1) <- indexe
+
+
+sim.results.vector1 <- sim.results1[,ncol(sim.results1)]
+
+summary(sim_results_data_frame1)
+
+# Plotting to see
+plot(sim.results1) # combination of two variables looks like latin hyper cube, well distributed
+
+# coerce to data frame and vector for 4.
+param.sets1 <- as.data.frame(param.sets1)
+sim.results.vector <- as.vector(sim.results.vector1)
+
+# 4.1 Calculate the partial (rank) correlation coefficient (THIELE)
+# based on the simulation results of step 3. 
+pcc.result1 <- pcc(X= param.sets1, y=sim.results.vector1, nboot = 100, 
+                   rank = FALSE)
+
+pcc.result1
+
+# View(pcc.result)
+ggplot(pcc.result1) +  coord_cartesian(xlim=c(0,60),ylim=c(-0.3,0.2)) + ylab("Estimate")
+ggplot(pcc.result1) +  coord_cartesian(xlim=c(60,121),ylim=c(-0.3,0.2)) + ylab("Estimate")
+
+
+# 4.2 Calculate the partial (rank) correlation coefficient (DAMIAN)
+src.result1 <- src(X= param.sets1, y=sim.results.vector1, nboot = 100, 
+                   rank = FALSE)
+src.result1
+plot(src.result1)
+abline(h=0, col="black") 
+ggplot(src.result1)
+barplot(src.result1, ylim=range(-1,1))
+abline(h=0, col="black")
