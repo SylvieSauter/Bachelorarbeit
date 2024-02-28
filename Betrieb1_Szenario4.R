@@ -124,7 +124,7 @@ print(kulturennderhubmitbff[9:14])
 
 sim1 <- function(LHS_matrix) {
   
-  # leere Liste um die Simulationswerte zu speiche
+  # leere Liste um die Simulationswerte zu speichern
   eval.values <- rep(0, nrow(LHS_matrix))
   
   # iterieren durch alle Kombinationen von Parametern
