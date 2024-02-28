@@ -123,7 +123,7 @@ print(kulturennderhubmitbff[9:14])
 
 sim1 <- function(LHS_matrix) {
   
-  # leere Liste um die Simulationswerte zu speiche
+  # leere Liste um die Simulationswerte zu speichern
   eval.values <- rep(0, nrow(LHS_matrix))
   
   # iterieren durch alle Kombinationen von Parametern
@@ -265,7 +265,7 @@ pcc.result1
 
 pcc_sortiert <- pcc.result1$PRCC[order(abs(pcc.result1$PRCC$original), decreasing = TRUE), ]
 
-# Gib die sortierten Daten aus
+# Sortierte Daten ausgeben
 print(pcc_sortiert)
 
 
@@ -314,7 +314,7 @@ ackerbff_namen <- c("extensive Naturwiese","Nützlingstreifen","Weizen in weiter
 sortierte_werte <- c(sortierte_werte, ackerbff_werte)
 sortierte_namen <- c(sortierte_namen, ackerbff_namen)
 
-# Sortiere die Werte nach Größe
+# Sortieren der Werte nach Größe
 sortierte_werte <- sort(sortierte_werte, decreasing = TRUE)
 sortierte_namen <- sortierte_namen[order(sortierte_werte, decreasing = TRUE)]
 
@@ -323,7 +323,7 @@ nummerierter_vektor <- seq_along(sortierte_werte)
 names(nummerierter_vektor) <- sortierte_namen
 
 
-# Datenrahmen erstellen
+# Plot erstellen
 dataframe1 <- data.frame(x = nummerierter_vektor, y = sortierte_werte)
 
 library(ggplot2)
