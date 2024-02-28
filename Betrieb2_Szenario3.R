@@ -114,7 +114,7 @@ grueterohneackeroptimum <- LP$objective_value
 kulturengrueterohnebff<-LP$solution
 
 
-#Sensitivität nach Viviane Fahrni
+#Sensitivitätsanalyse
 
 library(lhs)
 library(sensitivity)
@@ -264,7 +264,7 @@ colnames(param.sets1) <- endnamen
 
 
 # 3. Sim1 wird auf jede Parameterkombination ausgeführt
-sim.results1 <- sim1(param.sets1) #apply did not do it for me, that somehow only worked with one variable
+sim.results1 <- sim1(param.sets1) 
 
 sim_results_data_frame1 <- as.data.frame(sim.results1)
 
@@ -295,7 +295,7 @@ pcc.result1
 
 pcc_sortiert <- pcc.result1$PRCC[order(abs(pcc.result1$PRCC$original), decreasing = TRUE), ]
 
-# Gib die sortierten Daten aus
+# Sortierte Daten ausgeben
 print(pcc_sortiert)
 
 
