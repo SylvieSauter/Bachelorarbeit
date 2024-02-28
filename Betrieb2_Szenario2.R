@@ -139,7 +139,7 @@ differenzkulturengrueter <- kulturengruetermitbff[1:15] - kulturengrueterohnebff
 round(differenzkulturengrueter,3)
 print(kulturengruetermitbff[16:23])
 
-#Sensitivität nach Viviane Fahrni
+#Sensitivitätsanalyse
 
 library(lhs)
 library(sensitivity)
@@ -284,7 +284,7 @@ endnamen <- c(indexe, namesb)
 endnamen <- make.names(endnamen,unique=TRUE)
 print(endnamen)
 
-#Manuelles benennen der Parameter, die in der Darstellung erscheinen
+#Manuelles Benennen der Parameter, die in der Darstellung erscheinen
 endnamen[657] <- "Obstanlagenbegrenzung"
 endnamen[650] <- "Milchkuhbegrenzung"
 endnamen[653] <- "Max Anteile Weizen & Dinkel"
@@ -311,7 +311,7 @@ sim.results.vector1 <- sim.results1[,ncol(sim.results1)]
 
 summary(sim_results_data_frame1)
 
-# Plotting to see
+# Plot
 plot(sim.results1) # Latin Hyper Cube sieht gut verteilt aus
 
 #Datensätze als Vektor und Data Frame
@@ -335,7 +335,7 @@ pcc.result1
 
 pcc_sortiert <- pcc.result1$PRCC[order(abs(pcc.result1$PRCC$original), decreasing = TRUE), ]
 
-# Gib die sortierten Daten aus
+# Sortierte Daten ausgeben
 print(pcc_sortiert)
 
 
@@ -383,7 +383,7 @@ ackerbff_namen <- c("extensive Naturwiese","Rotationsbrache","Nützlingsstreifen
 sortierte_werte <- c(sortierte_werte, ackerbff_werte)
 sortierte_namen <- c(sortierte_namen, ackerbff_namen)
 
-# Sortiere die Werte nach Größe
+# Werte nach Grösse sortieren
 sortierte_werte <- sort(sortierte_werte, decreasing = TRUE)
 sortierte_namen <- sortierte_namen[order(sortierte_werte, decreasing = TRUE)]
 
