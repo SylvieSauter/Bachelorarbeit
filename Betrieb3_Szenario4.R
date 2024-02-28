@@ -103,7 +103,7 @@ print(kulturenludermitbff[12:15])
 differenzbetriebe <- (differenzgrueter+differenzluder+differenzanderhuboptimum)/3
 print(differenzbetriebe)
 
-#Sensitivität nach Viviane Fahrni
+#Sensitivitätsanalyse
 
 library(lhs)
 library(sensitivity)
@@ -146,9 +146,7 @@ library(tidyterra)
 library(tgp)
 
 
-#1. Define a function that runs the simulation model 
-#for a given parameter combination and return the 
-#value(s) of the fitting criteria.
+#1. Sim1 auf Parameter ausführen
 
 
 sim1 <- function(LHS_matrix) {
@@ -252,10 +250,8 @@ colnames(param.sets1) <- endnamen
 
 
 
-# 3. Iterate through the parameter combinations from step 2 
-# and call function sim1 from step 1 for each parameter
-# combination. 
-sim.results1 <- sim1(param.sets1) #apply did not do it for me, that somehow only worked with one variable
+# Sim1 auf alle Parameter ausführen
+sim.results1 <- sim1(param.sets1) 
 
 sim_results_data_frame1 <- as.data.frame(sim.results1)
 
@@ -268,31 +264,24 @@ sim.results.vector1 <- sim.results1[,ncol(sim.results1)]
 
 summary(sim_results_data_frame1)
 
-# Plotting to see
-plot(sim.results1) # combination of two variables looks like latin hyper cube, well distributed
+# Plot
+plot(sim.results1) 
 
-# coerce to data frame and vector for 4.
+
 param.sets1 <- as.data.frame(param.sets1)
 sim.results.vector <- as.vector(sim.results.vector1)
 
-# 4.1 Calculate the partial (rank) correlation coefficient (THIELE)
-# based on the simulation results of step 3. 
+# PCC berechnen
 pcc.result1 <- pcc(X= param.sets1, y=sim.results.vector1, nboot = 1000, 
                    rank = TRUE)
 
 pcc.result1
 
-# View(pcc.result)
-ggplot(pcc.result1) +  coord_cartesian(xlim=c(0,60),ylim=c(-0.3,0.2)) + ylab("Estimate")
-ggplot(pcc.result1) +  coord_cartesian(xlim=c(60,120),ylim=c(-0.3,0.2)) + ylab("Estimate")
-ggplot(pcc.result1) +  coord_cartesian(xlim=c(120,180),ylim=c(-0.3,0.2)) + ylab("Estimate")
-ggplot(pcc.result1) +  coord_cartesian(xlim=c(180,225),ylim=c(-0.3,0.2)) + ylab("Estimate")
-
 #Daten nach Höhe des Estimate sortieren
 
 pcc_sortiert <- pcc.result1$PRCC[order(abs(pcc.result1$PRCC$original), decreasing = TRUE), ]
 
-# Gib die sortierten Daten aus
+# Sortierte Daten ausgeben
 print(pcc_sortiert)
 
 
