@@ -102,7 +102,7 @@ print(kulturenludermitbff[12:15])
 differenzbetriebe <- (differenzgrueter+differenzluder+differenzanderhuboptimum)/3
 print(differenzbetriebe)
 
-#Sensitivität nach Viviane Fahrni
+#Sensitivitätsanalyse
 
 library(lhs)
 library(sensitivity)
@@ -144,9 +144,7 @@ library(terra)
 library(tidyterra)
 library(tgp)
 
-#1. Define a function that runs the simulation model 
-#for a given parameter combination and return the 
-#value(s) of the fitting criteria.
+#1. Simulation
 
 
 sim1 <- function(LHS_matrix) {
@@ -259,10 +257,8 @@ colnames(param.sets1) <- endnamen
 
 print(endnamen)
 
-# 3. Iterate through the parameter combinations from step 2 
-# and call function sim1 from step 1 for each parameter
-# combination. 
-sim.results1 <- sim1(param.sets1) #apply did not do it for me, that somehow only worked with one variable
+# sim1 auf alle Parameter ausführen 
+sim.results1 <- sim1(param.sets1) 
 
 sim_results_data_frame1 <- as.data.frame(sim.results1)
 
@@ -275,15 +271,14 @@ sim.results.vector1 <- sim.results1[,ncol(sim.results1)]
 
 summary(sim_results_data_frame1)
 
-# Plotting to see
-plot(sim.results1) # combination of two variables looks like latin hyper cube, well distributed
+# Plot
+plot(sim.results1) 
 
-# coerce to data frame and vector for 4.
+
 param.sets1 <- as.data.frame(param.sets1)
 sim.results.vector <- as.vector(sim.results.vector1)
 
-# 4.1 Calculate the partial (rank) correlation coefficient (THIELE)
-# based on the simulation results of step 3. 
+# PCC berechnen
 pcc.result1 <- pcc(X= param.sets1, y=sim.results.vector1, nboot = 1000, 
                    rank = TRUE)
 
@@ -294,7 +289,7 @@ pcc.result1
 
 pcc_sortiert <- pcc.result1$PRCC[order(abs(pcc.result1$PRCC$original), decreasing = TRUE), ]
 
-# Gib die sortierten Daten aus
+# Sortierte Daten ausgeben
 print(pcc_sortiert)
 
 
@@ -340,7 +335,7 @@ ackerbff_namen <- c("extensive Naturwiese","Weizen in weiter Reihe","Schonstreif
 sortierte_werte <- c(sortierte_werte, ackerbff_werte)
 sortierte_namen <- c(sortierte_namen, ackerbff_namen)
 
-# Sortiere die Werte nach Größe
+# Sortieren der Werte nach Grösse
 sortierte_werte <- sort(sortierte_werte, decreasing = TRUE)
 sortierte_namen <- sortierte_namen[order(sortierte_werte, decreasing = TRUE)]
 
