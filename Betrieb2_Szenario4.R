@@ -140,7 +140,7 @@ differenzkulturengrueter <- kulturengruetermitbff[1:15] - kulturengrueterohnebff
 round(differenzkulturengrueter,3)
 print(kulturengruetermitbff[16:23])
 
-#Sensitivität nach Viviane Fahrni
+#Sensitivitätsanalyse
 
 library(lhs)
 library(sensitivity)
@@ -301,7 +301,7 @@ sim.results.vector1 <- sim.results1[,ncol(sim.results1)]
 
 summary(sim_results_data_frame1)
 
-# Plotting to see
+# Plot
 plot(sim.results1) # Latin Hyper Cube sieht gut verteilt aus
 
 #Datensätze als Vektor und Data Frame
@@ -316,23 +316,11 @@ pcc.result1 <- pcc(X= param.sets1, y=sim.results.vector1, nboot = 1000,
 
 pcc.result1
 
-# Resultate betrachten
-
-
-ggplot(pcc.result1) +  coord_cartesian(xlim=c(0,82),ylim=c(-0.5,0.5)) + ylab("Estimate")
-ggplot(pcc.result1) +  coord_cartesian(xlim=c(82,164),ylim=c(-0.5,0.5)) + ylab("Estimate")
-ggplot(pcc.result1) +  coord_cartesian(xlim=c(164,246),ylim=c(-0.5,0.5)) + ylab("Estimate")
-ggplot(pcc.result1) +  coord_cartesian(xlim=c(246,328),ylim=c(-0.5,0.5)) + ylab("Estimate")
-ggplot(pcc.result1) +  coord_cartesian(xlim=c(328,410),ylim=c(-0.5,0.5)) + ylab("Estimate")
-ggplot(pcc.result1) +  coord_cartesian(xlim=c(410,492),ylim=c(-0.5,0.5)) + ylab("Estimate")
-ggplot(pcc.result1) +  coord_cartesian(xlim=c(492,574),ylim=c(-0.5,0.5)) + ylab("Estimate")
-ggplot(pcc.result1) +  coord_cartesian(xlim=c(574,644),ylim=c(-0.5,0.5)) + ylab("Estimate")
-
 #Daten nach Höhe des Estimate sortieren
 
 pcc_sortiert <- pcc.result1$PRCC[order(abs(pcc.result1$PRCC$original), decreasing = TRUE), ]
 
-# Gib die sortierten Daten aus
+# Sortierte Daten ausgeben
 print(pcc_sortiert)
 
 
