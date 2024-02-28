@@ -130,11 +130,6 @@ library(terra)
 library(tidyterra)
 library(tgp)
 
-
-#Schattenpreise berechnen
-schattenpreise <- duals(LP)
-print(schattenpreise)
-
 #1. Simulationsfunktion
 
 
@@ -280,7 +275,7 @@ ggplot(pcc.result1) + coord_cartesian(ylim = c(-0.125,0.125))
 
 pcc_sortiert <- pcc.result1$PRCC[order(abs(pcc.result1$PRCC$original), decreasing = TRUE), ]
 
-# Gib die sortierten Daten aus
+# Sortierte Daten ausgeben
 print(pcc_sortiert)
 
 
